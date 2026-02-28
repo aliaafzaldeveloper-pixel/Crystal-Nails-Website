@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Crystal Nails Salon",
+  "description": "A luxury, premium nail salon website featuring online booking, payment integration, and a modern elegant design.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
