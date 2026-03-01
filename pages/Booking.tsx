@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SERVICES } from '../constants';
 import { BookingFormData } from '../types';
-
+import { supabase } from "../lib/supabase";
 const Booking: React.FC = () => {
   const location = useLocation();
   const [step, setStep] = useState(1);
@@ -38,14 +38,47 @@ const Booking: React.FC = () => {
     setStep(prev => prev + 1);
   };
 
-  const handleBooking = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+ const handleBooking = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    const selectedService = SERVICES.find(s => s.id === formData.serviceId);
+
+    if (!selectedService) {
+      alert("Please select a service.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // ✅ Save booking to Supabase
+    const { error } = await supabase.from("bookings").insert([
+      {
+        name: formData.fullName,
+        phone: formData.phone,
+        service: selectedService.name,
+        date: formData.date,      // format: YYYY-MM-DD
+        time: formData.time,
+        amount: selectedService.price
+      }
+    ]);
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      alert("Booking save nahi hui. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // ✅ Success
+    setStep(3);
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  } finally {
     setIsSubmitting(false);
-    setStep(3); // Success step
-  };
+  }
+};
 
   const selectedService = SERVICES.find(s => s.id === formData.serviceId);
 
